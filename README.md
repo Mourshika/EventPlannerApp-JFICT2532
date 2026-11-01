@@ -72,11 +72,3 @@ Screenshots captured while testing the app:
 ![Search results for an event name](screenshots/Screenshot%202026-11-02%20005942.png)
 
 ![Search results for a date](screenshots/Screenshot%202026-11-02%20010126.png)
-
-## GitHub submission
-
-Create a repository named `EventPlannerApp-JFICT2532`. Include the project source, this README, `.gitignore`, and your screenshots. Follow your lecturer's instructions for repository visibility and submission through Google Classroom.
-
-## Notes
-
-Events are stored on this device and do not synchronize across devices. Notification delivery depends on device permissions and Android notification settings.
