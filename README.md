@@ -51,7 +51,7 @@ Record the result of each check before submission.
 - [x] Search by part of an event name and confirm matching results.
 - [x] Search by date in `YYYY-MM-DD` format (2026-11-04).
 - [x] Reload the app in Expo Go and confirm saved events remain.
-- [ ] Allow notification permission and test a reminder scheduled a few minutes ahead.
+- [x] Test reminder delivery in Expo Go — failed; no notification appeared at the scheduled time.
 Reminder delivery check: Reminder QA saved for Nov 2, 2026 at 1:25 AM with a one-minute reminder, but no notification appeared at the scheduled time in Expo Go. Delivery remains unverified.
 - [ ] Deny notification permission; confirm the app remains usable.
 - [x] Confirm the empty-state message appears when there are no matching events.
