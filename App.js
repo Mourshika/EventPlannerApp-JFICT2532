@@ -23,12 +23,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 
-
-              
 const KEY = '@event_planner_events';
 
-
-              
 const C = {
   bg: '#F4F7FC',
   white: '#FFFFFF',
@@ -40,8 +36,6 @@ const C = {
   green: '#16845B'
 };
 
-
-                        
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -50,29 +44,39 @@ Notifications.setNotificationHandler({
   })
 });
 
-
-                                           
 const toDate = (d, t) => {
-  const [y, m, day] = d.split('-').map(Number);
-  const [h, min] = t.split(':').map(Number);
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  const timeParts = /^(\d{2}):(\d{2})$/.exec(t);
 
-  return new Date(y, m - 1, day, h, min);
+  if (!dateParts || !timeParts) {
+    return new Date(NaN);
+  }
+
+  const [, year, month, day] = dateParts.map(Number);
+  const [, hour, minute] = timeParts.map(Number);
+  const value = new Date(year, month - 1, day, hour, minute);
+
+  if (
+    value.getFullYear() !== year ||
+    value.getMonth() !== month - 1 ||
+    value.getDate() !== day ||
+    value.getHours() !== hour ||
+    value.getMinutes() !== minute
+  ) {
+    return new Date(NaN);
+  }
+
+  return value;
 };
 
-
-                                      
 const dateString = d => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-
-                                 
 const timeString = d => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
-
-                                   
 const pretty = (d, t) => {
   return toDate(d, t).toLocaleString([], {
     weekday: 'short',
@@ -84,10 +88,8 @@ const pretty = (d, t) => {
   });
 };
 
-
 export default function App() {
 
-                    
   const [events, setEvents] = useState([]);
   const [ready, setReady] = useState(false);
 
@@ -105,8 +107,6 @@ export default function App() {
 
   const [picker, setPicker] = useState('');
 
-
-                                          
   useEffect(() => {
 
     (async () => {
@@ -128,12 +128,9 @@ export default function App() {
       }
     })();
 
-    setupNotifications();
 
   }, []);
 
-
-                                                
   useEffect(() => {
 
     if (ready) {
@@ -150,8 +147,6 @@ export default function App() {
 
   }, [events, ready]);
 
-
-                                                                              
   async function setupNotifications() {
     try {
       let permission = await Notifications.getPermissionsAsync();
@@ -166,8 +161,6 @@ export default function App() {
     }
   }
 
-
-                         
   function clearForm() {
 
     setName('');
@@ -180,8 +173,6 @@ export default function App() {
 
   }
 
-
-                                        
   function newEvent() {
 
     clearForm();
@@ -189,8 +180,6 @@ export default function App() {
 
   }
 
-
-                                            
   function editEvent(e) {
 
     setName(e.name);
@@ -204,16 +193,12 @@ export default function App() {
 
   }
 
-
-                            
   async function save() {
 
     const n = name.trim();
     const mins = Number(reminder);
     const when = toDate(date, time);
 
-
-                          
     if (!n) {
       return Alert.alert(
         'Required',
@@ -221,8 +206,6 @@ export default function App() {
       );
     }
 
-
-                             
     if (!Number.isFinite(when.getTime())) {
       return Alert.alert(
         'Invalid date',
@@ -230,8 +213,6 @@ export default function App() {
       );
     }
 
-
-                          
     if (when <= new Date()) {
       return Alert.alert(
         'Past event',
@@ -239,8 +220,6 @@ export default function App() {
       );
     }
 
-
-                             
     if (
       !Number.isInteger(mins) ||
       mins < 0 ||
@@ -252,23 +231,18 @@ export default function App() {
       );
     }
 
-
     const id = editing || String(Date.now());
 
     const previous = events.find(
       e => e.id === editing
     );
 
-
-                                                    
     if (previous?.notificationId) {
       await Notifications.cancelScheduledNotificationAsync(
         previous.notificationId
       ).catch(() => {});
     }
 
-
-                              
     const event = {
       id,
       name: n,
@@ -279,8 +253,6 @@ export default function App() {
       notificationId: null
     };
 
-
-                            
     const granted = await setupNotifications();
 
     if (granted) {
@@ -320,8 +292,6 @@ export default function App() {
       }
     }
 
-
-                              
     setEvents(old =>
       editing
         ? old.map(e => e.id === editing ? event : e)
@@ -333,8 +303,6 @@ export default function App() {
 
   }
 
-
-                    
   function remove(e) {
 
     Alert.alert(
@@ -369,8 +337,6 @@ export default function App() {
 
   }
 
-
-                                 
   const ordered = useMemo(() => {
 
     return [...events].sort(
@@ -381,31 +347,30 @@ export default function App() {
 
   }, [events]);
 
+  const now = new Date();
+  const today = dateString(now);
 
-                                      
   const upcoming = ordered.filter(
-    e => toDate(e.date, e.time) >= new Date()
+    e => toDate(e.date, e.time) >= now
   );
 
   const past = ordered.filter(
-    e => toDate(e.date, e.time) < new Date()
+    e => toDate(e.date, e.time) < now
   );
 
-
-                                  
   const todayCount = upcoming.filter(
-    e => e.date === dateString(new Date())
+    e => e.date === today
   ).length;
 
+  const searchText = query.trim();
+  const searchName = searchText.toLowerCase();
+  const isFullDate = /^\d{4}-\d{2}-\d{2}$/.test(searchText);
 
-                                  
   const results = ordered.filter(e =>
-    e.name.toLowerCase().includes(query.trim().toLowerCase()) ||
-    e.date.includes(query.trim())
+    e.name.toLowerCase().includes(searchName) ||
+    (isFullDate && e.date === searchText)
   );
 
-
-                         
   function Card({ item }) {
 
     return (
@@ -426,7 +391,9 @@ export default function App() {
         )}
 
         <Text style={s.badge}>
-          🔔 Reminder: {item.reminder} minutes before
+          {item.notificationId
+            ? `🔔 Reminder: ${item.reminder} minutes before`
+            : 'Reminder not scheduled'}
         </Text>
 
         <View style={s.actions}>
@@ -444,7 +411,6 @@ export default function App() {
               Edit
             </Text>
           </TouchableOpacity>
-
 
           <TouchableOpacity
             onPress={() => remove(item)}
@@ -467,8 +433,6 @@ export default function App() {
 
   }
 
-
-                                                     
   function emptyState(message) {
     return (
       <View style={s.empty}>
@@ -479,7 +443,6 @@ export default function App() {
     );
   }
 
-                                                       
   function list(data, message) {
     if (data.length === 0) {
       return emptyState(message);
@@ -492,7 +455,7 @@ export default function App() {
         renderItem={({ item }) => <Card item={item} />}
       />
     );
-  }                                        
+  }
   function pick(value) {
 
     if (picker === 'date') {
@@ -505,7 +468,6 @@ export default function App() {
 
   }
 
-
   return (
 
     <SafeAreaView style={s.safe}>
@@ -515,8 +477,6 @@ export default function App() {
         backgroundColor={C.bg}
       />
 
-
-                        
       <View style={s.header}>
 
         <View>
@@ -537,8 +497,6 @@ export default function App() {
 
       </View>
 
-
-                             
       <View style={s.tabs}>
 
         {['Home', 'Events', 'Search'].map(x => (
@@ -567,11 +525,8 @@ export default function App() {
 
       </View>
 
-
       <View style={s.body}>
 
-
-                           
         {tab === 'Home' && (
 
           <ScrollView>
@@ -584,8 +539,6 @@ export default function App() {
               Everything important, in one place.
             </Text>
 
-
-                                    
             <View style={s.stats}>
 
               <View style={s.stat}>
@@ -599,7 +552,6 @@ export default function App() {
                 </Text>
 
               </View>
-
 
               <View style={s.stat}>
 
@@ -615,8 +567,6 @@ export default function App() {
 
             </View>
 
-
-                                       
             <TouchableOpacity
               style={s.primary}
               onPress={newEvent}
@@ -627,7 +577,6 @@ export default function App() {
               </Text>
 
             </TouchableOpacity>
-
 
             <Text style={s.subhead}>
               Next events
@@ -645,8 +594,6 @@ export default function App() {
 
         )}
 
-
-                             
         {tab === 'Events' && (
 
           <View style={{ flex: 1 }}>
@@ -665,11 +612,9 @@ export default function App() {
 
             </View>
 
-
             <Text style={s.subhead}>
               Upcoming ({upcoming.length})
             </Text>
-
 
             <View style={{ flex: 1 }}>
 
@@ -679,7 +624,6 @@ export default function App() {
               )}
 
             </View>
-
 
             {past.length > 0 && (
 
@@ -694,8 +638,6 @@ export default function App() {
 
         )}
 
-
-                             
         {tab === 'Search' && (
 
           <View style={{ flex: 1 }}>
@@ -708,7 +650,6 @@ export default function App() {
               Search by event name or date (YYYY-MM-DD).
             </Text>
 
-
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -716,11 +657,9 @@ export default function App() {
               style={s.input}
             />
 
-
             <Text style={s.subhead}>
               Results ({results.length})
             </Text>
-
 
             <View style={{ flex: 1 }}>
 
@@ -737,8 +676,6 @@ export default function App() {
 
       </View>
 
-
-                                    
       <Modal
         visible={modal}
         animationType="slide"
@@ -755,8 +692,6 @@ export default function App() {
             keyboardShouldPersistTaps="handled"
           >
 
-
-                                
             <View style={s.row}>
 
               <Text style={s.heading}>
@@ -776,8 +711,6 @@ export default function App() {
 
             </View>
 
-
-                              
             <Text style={s.label}>
               Event name *
             </Text>
@@ -790,8 +723,6 @@ export default function App() {
               maxLength={80}
             />
 
-
-                              
             <Text style={s.label}>
               Date *
             </Text>
@@ -811,8 +742,6 @@ export default function App() {
 
             </TouchableOpacity>
 
-
-                              
             <Text style={s.label}>
               Time *
             </Text>
@@ -832,8 +761,6 @@ export default function App() {
 
             </TouchableOpacity>
 
-
-                                        
             {!!picker && (
 
               <DateTimePicker
@@ -858,8 +785,6 @@ export default function App() {
 
             )}
 
-
-                               
             <Text style={s.label}>
               Description (optional)
             </Text>
@@ -879,8 +804,6 @@ export default function App() {
               maxLength={500}
             />
 
-
-                            
             <Text style={s.label}>
               Reminder (minutes before)
             </Text>
@@ -896,8 +819,6 @@ export default function App() {
               Example: 10 means notify 10 minutes before the event.
             </Text>
 
-
-                               
             <TouchableOpacity
               style={s.primary}
               onPress={save}
@@ -909,8 +830,6 @@ export default function App() {
 
             </TouchableOpacity>
 
-
-                                 
             <TouchableOpacity
               onPress={() => {
                 setModal(false);
@@ -940,8 +859,6 @@ export default function App() {
 
 }
 
-
-         
 const s = StyleSheet.create({
 
   safe: {
@@ -1150,5 +1067,3 @@ const s = StyleSheet.create({
   }
 
 });
-
-
