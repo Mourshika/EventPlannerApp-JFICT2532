@@ -1,0 +1,18 @@
+{
+  "name": "event-planner-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "9.2.1",
+    "expo": "*",
+    "expo-notifications": "~58.1.7",
+    "react": "19.3.0",
+    "react-native": "*"
+  }
+}

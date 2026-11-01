@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Event Planner",
+    "slug": "event-planner-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.Mourshi.eventplanner"
+    },
+    "plugins": [
+      "expo-notifications",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
