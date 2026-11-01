@@ -50,7 +50,7 @@ Record the result of each check before submission.
 - [x] Confirm a deletion (temporary QA Demo Event).
 - [x] Search by part of an event name and confirm matching results.
 - [x] Search by date in `YYYY-MM-DD` format (2026-11-04).
-- [ ] Close and reopen the app; confirm saved events remain.
+- [x] Reload the app in Expo Go and confirm saved events remain.
 - [ ] Allow notification permission and test a reminder scheduled a few minutes ahead.
 - [ ] Deny notification permission; confirm the app remains usable.
 - [x] Confirm the empty-state message appears when there are no matching events.
